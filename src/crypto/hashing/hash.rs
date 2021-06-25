@@ -1,3 +1,4 @@
+use bs58 as base58;
 use data_encoding::HEXUPPER;
 use sha2::{Digest, Sha256};
 use std::convert::TryInto;
@@ -101,6 +102,78 @@ impl Hashable for u64 {
 impl Hashable for u128 {
     fn hash(&self) -> Hash<Self> {
         Hash::from_bytes(&self.to_be_bytes()).cast()
+    }
+}
+
+pub trait Serializable
+where
+    Self: Sized,
+{
+    fn serialize(&self) -> String;
+    fn deserialize(input: String) -> Option<Self>;
+}
+
+impl Serializable for u64 {
+    fn serialize(&self) -> String {
+        base58::encode(self.to_be_bytes()).into_string()
+    }
+
+    fn deserialize(input: String) -> Option<Self> {
+        let bytes = base58::decode(input)
+            .into_vec()
+            .map(|bytes| bytes.as_slice().try_into());
+        if let Ok(Ok(bytes)) = bytes {
+            Some(u64::from_be_bytes(bytes))
+        } else {
+            None
+        }
+    }
+}
+
+impl Serializable for u128 {
+    fn serialize(&self) -> String {
+        base58::encode(self.to_be_bytes()).into_string()
+    }
+
+    fn deserialize(input: String) -> Option<Self> {
+        let bytes = base58::decode(input)
+            .into_vec()
+            .map(|bytes| bytes.as_slice().try_into());
+        if let Ok(Ok(bytes)) = bytes {
+            Some(u128::from_be_bytes(bytes))
+        } else {
+            None
+        }
+    }
+}
+
+impl<T> Serializable for Hash<T> {
+    fn serialize(&self) -> String {
+        base58::encode(self.get_bytes()).into_string()
+    }
+
+    fn deserialize(input: String) -> Option<Self> {
+        let bytes = base58::decode(input)
+            .into_vec()
+            .map(|bytes| bytes.as_slice().try_into());
+        if let Ok(Ok(bytes)) = bytes {
+            Some(Hash(bytes, PhantomData))
+        } else {
+            None
+        }
+    }
+}
+
+impl Serializable for Vec<u8> {
+    fn serialize(&self) -> String {
+        base58::encode(self).into_string()
+    }
+
+    fn deserialize(input: String) -> Option<Self> {
+        match base58::decode(input).into_vec() {
+            Ok(bytes) => Some(bytes),
+            _ => None,
+        }
     }
 }
 

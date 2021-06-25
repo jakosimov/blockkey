@@ -372,6 +372,7 @@ dependencies = [
 name = "blockkey"
 version = "0.1.0"
 dependencies = [
+ "bs58",
  "data-encoding",
  "futures",
  "im-rc",

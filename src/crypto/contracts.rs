@@ -1,4 +1,5 @@
-use crate::crypto::hashing::{Hash, Hashable};
+use crate::crypto::hashing::{Hash, Hashable, Serializable};
+use bs58 as base58;
 use libp2p::identity;
 use std::time::SystemTime;
 
@@ -18,6 +19,22 @@ impl PublicKey {
 impl Hashable for PublicKey {
     fn hash(&self) -> Hash<Self> {
         Hash::from_bytes(&self.key.clone().into_protobuf_encoding()).cast()
+    }
+}
+
+impl Serializable for PublicKey {
+    fn serialize(&self) -> String {
+        base58::encode(self.key.clone().into_protobuf_encoding()).into_string()
+    }
+
+    fn deserialize(input: String) -> Option<Self> {
+        match base58::decode(input).into_vec() {
+            Ok(bytes) => match identity::PublicKey::from_protobuf_encoding(&bytes) {
+                Ok(key) => Some(PublicKey { key }),
+                _ => None,
+            },
+            _ => None,
+        }
     }
 }
 
@@ -75,6 +92,45 @@ impl<T: Hashable> Contract<T> {
 impl<T: Hashable> Hashable for Contract<T> {
     fn hash(&self) -> Hash<Contract<T>> {
         hash![self.signee, self.signature, self.timestamp, self.content]
+    }
+}
+
+impl<T: Hashable + Serializable> Serializable for Contract<T> {
+    fn serialize(&self) -> String {
+        format!(
+            "{} {} {} {}",
+            self.signee.serialize(),
+            self.signature.serialize(),
+            self.timestamp.serialize(),
+            self.content.serialize()
+        )
+    }
+
+    fn deserialize(input: String) -> Option<Self> {
+        let mut words = input.split_whitespace();
+        let signee = PublicKey::deserialize(words.next()?.to_string())?;
+        let signature = Vec::<u8>::deserialize(words.next()?.to_string())?;
+        let timestamp = u128::deserialize(words.next()?.to_string())?;
+        let rest = {
+            let mut rest = String::new();
+            let mut first = true;
+            for word in words {
+                if !first {
+                    rest.push(' ');
+                }
+                rest.push_str(word);
+                first = false;
+            }
+            rest
+        };
+        let content = T::deserialize(rest)?;
+
+        Some(Contract {
+            signee,
+            signature,
+            timestamp,
+            content,
+        })
     }
 }
 
