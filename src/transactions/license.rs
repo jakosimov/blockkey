@@ -1,5 +1,6 @@
 use crate::crypto::contracts::{Contract, UserId};
 use crate::crypto::hashing::*;
+use crate::crypto::serialize::Serializable;
 
 pub struct UnsignedLicenseCreation {
     pub seed: u64,

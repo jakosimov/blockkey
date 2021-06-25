@@ -1,5 +1,4 @@
-use crate::crypto::contracts::Contract;
-use crate::crypto::hashing::Serializable;
+use crate::crypto::serialize::Serializable;
 use crate::transactions::license::{LicenseCreation, LicenseTransfer};
 
 pub mod license;
@@ -21,10 +20,8 @@ impl Serializable for Transaction {
     fn deserialize(input: String) -> Option<Self> {
         if let Some(creation) = LicenseCreation::deserialize(input.clone()) {
             Some(Transaction::LicenseCreation(creation))
-        } else if let Some(transfer) = LicenseTransfer::deserialize(input) {
-            Some(Transaction::LicenseTransfer(transfer))
         } else {
-            None
+            LicenseTransfer::deserialize(input).map(Transaction::LicenseTransfer)
         }
     }
 }

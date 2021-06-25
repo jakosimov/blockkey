@@ -1,4 +1,5 @@
-use crate::crypto::hashing::{Hash, Hashable, Serializable};
+use crate::crypto::hashing::{Hash, Hashable};
+use crate::crypto::serialize::Serializable;
 use bs58 as base58;
 use libp2p::identity;
 use std::time::SystemTime;
