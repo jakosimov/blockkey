@@ -96,6 +96,17 @@ impl<T: Hashable> Hashable for Contract<T> {
     }
 }
 
+impl<T: Hashable + Eq> PartialEq for Contract<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.signee == other.signee
+            && self.signature == other.signature
+            && self.timestamp == other.timestamp
+            && self.content == other.content
+    }
+}
+
+impl<T: Hashable + Eq> Eq for Contract<T> {}
+
 impl<T: Hashable + Serializable> Serializable for Contract<T> {
     fn serialize(&self) -> String {
         format!(

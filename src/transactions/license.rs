@@ -2,6 +2,7 @@ use crate::crypto::contracts::{Contract, UserId};
 use crate::crypto::hashing::*;
 use crate::crypto::serialize::Serializable;
 
+#[derive(PartialEq, Eq)]
 pub struct UnsignedLicenseCreation {
     pub seed: u64,
 }
@@ -23,6 +24,7 @@ impl Serializable for UnsignedLicenseCreation {
     }
 }
 
+#[derive(PartialEq, Eq)]
 pub struct UnsignedLicenseTransfer {
     pub license: LicenseId,
     pub recipient: UserId,

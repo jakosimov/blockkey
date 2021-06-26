@@ -4,6 +4,7 @@ use crate::transactions::license::{LicenseCreation, LicenseTransfer};
 pub mod license;
 pub mod state;
 
+#[derive(PartialEq, Eq)]
 pub enum Transaction {
     LicenseCreation(LicenseCreation),
     LicenseTransfer(LicenseTransfer),
